@@ -64,6 +64,7 @@ instacart %>%
 ```
 
 <img src="Homework3_files/figure-gfm/unnamed-chunk-3-1.png" width="90%" />
+
 Most of the aisles with order counts above 10,000 show between 10k - 20k
 orders. There are about 8 aisles with order counts between 20-40k, 3
 aisles with order counts between 40-80k, and two aisles (fruit and
@@ -128,4 +129,31 @@ are ordered around 12pm.
 
 ## Problem 2
 
+Pivot to long to have day hour minute activity, with the values in the
+chart as the values for activity, the values for minute are the column
+headers. Use mutate to create new variables. Make sure minute of the day
+is numeric.
+
+make reasonable headers and names, reasonable class types.
+
+Aggregate (group by and summarize) for total minutes in a day. Make a
+table with week number and day of the week. Will probably have to
+reorder factor to make day of week in right order for column headers.
+
+Make a single plot (connected scatter dots, geom\_line) with lines for
+each day (minute on x, activity count on the y), aesthetic mapping for
+color for day of the week
+
 ## Problem 3
+
+use count for snowfall.
+
+data manipulation (group a bunch, filter, then summarize) + plots. For
+each station (multiple lines), time course over the years for June and
+July in two panels
+
+use patchwork to merge plots. Don’t use scatterplot, maybe use contour
+plot, bin plot, hex plot…
+
+First filter, then show distribution (ridge, box, violin, etc…) for each
+year.
