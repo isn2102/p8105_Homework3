@@ -129,10 +129,27 @@ are ordered around 12pm.
 
 ## Problem 2
 
-Pivot to long to have day hour minute activity, with the values in the
-chart as the values for activity, the values for minute are the column
-headers. Use mutate to create new variables. Make sure minute of the day
-is numeric.
+Load data and tidy by cleaning variable names and pivoting to longer
+with one variable for the minute of activity in the day and one variable
+for the activity count in that minute. Add a weekend and weekday
+variable and change minute of activity to numeric.
+
+``` r
+accel_df <- read_csv("./data/accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute_activity", 
+    values_to = "activity_count") %>% 
+    {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
+                                 "weekend", "weekday")))} %>% 
+  mutate(minute_activity = rep((1:1440), times = 35))
+```
+
+The dataset accel\_df contains 50400 observations and 6 variables.
+Variables are the week, the day, the specific minute of the day, the
+activity count in that minute, and whether it was a weekend or a
+weekday.
 
 make reasonable headers and names, reasonable class types.
 
