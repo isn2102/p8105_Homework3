@@ -92,7 +92,7 @@ Overall coffee ice cream is ordered a little later in the day on weekdays (aroun
 ## Problem 2
 
 Load data and tidy by cleaning variable names and pivoting to longer with one variable for the minute of activity in the day and one variable for the activity count in that minute. Add a weekend and weekday variable and change minute of activity to numeric. 
-```{r read, message = FALSE}
+```{r, message = FALSE}
 accel_df <- read_csv("./data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
   pivot_longer(
@@ -105,10 +105,26 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
 ```
 The dataset accel_df contains `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. Variables are the week, the day, the specific minute of the day, the activity count in that minute, and whether it was a weekend or a weekday. 
 
+Create a table with daily activity counts summed across all minutes for the 5 weeks. 
+**FACTOR RELVEL NOT WORKING**
+```{r, message = FALSE}
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarize(
+    daily_activity = sum(activity_count)) %>% 
+  mutate(day = as.factor(day)) %>% 
+  mutate(day = (forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))) %>% 
+  pivot_wider(
+    names_from = day, 
+    values_from = daily_activity) %>% 
+  knitr::kable()
+```
+From this summary it seems that in weeks 4 and 5 the activity on Sunday and particularly Saturday was lower than the other days and weeks. Other than that trends are not very apparent. 
 
-make reasonable headers and names, reasonable class types. 
+```{r, message = FALSE}
 
-Aggregate (group by and summarize) for total minutes in a day. Make a table with week number and day of the week. Will probably have to reorder factor to make day of week in right order for column headers. 
+```
+
 
 Make a single plot (connected scatter dots, geom_line) with lines for each day (minute on x, activity count on the y), aesthetic mapping for color for day of the week 
 

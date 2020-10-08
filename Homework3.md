@@ -151,11 +151,33 @@ Variables are the week, the day, the specific minute of the day, the
 activity count in that minute, and whether it was a weekend or a
 weekday.
 
-make reasonable headers and names, reasonable class types.
+Create a table with daily activity counts summed across all minutes for
+the 5 weeks. **FACTOR RELVEL NOT WORKING**
 
-Aggregate (group by and summarize) for total minutes in a day. Make a
-table with week number and day of the week. Will probably have to
-reorder factor to make day of week in right order for column headers.
+``` r
+accel_df %>% 
+  group_by(week, day) %>% 
+  summarize(
+    daily_activity = sum(activity_count)) %>% 
+  mutate(day = as.factor(day)) %>% 
+  mutate(day = (forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))) %>% 
+  pivot_wider(
+    names_from = day, 
+    values_from = daily_activity) %>% 
+  knitr::kable()
+```
+
+| week |   Friday |    Monday | Saturday | Sunday | Thursday |  Tuesday | Wednesday |
+| ---: | -------: | --------: | -------: | -----: | -------: | -------: | --------: |
+|    1 | 480542.6 |  78828.07 |   376254 | 631105 | 355923.6 | 307094.2 |    340115 |
+|    2 | 568839.0 | 295431.00 |   607175 | 422018 | 474048.0 | 423245.0 |    440962 |
+|    3 | 467420.0 | 685910.00 |   382928 | 467052 | 371230.0 | 381507.0 |    468869 |
+|    4 | 154049.0 | 409450.00 |     1440 | 260617 | 340291.0 | 319568.0 |    434460 |
+|    5 | 620860.0 | 389080.00 |     1440 | 138421 | 549658.0 | 367824.0 |    445366 |
+
+From this summary it seems that in weeks 4 and 5 the activity on Sunday
+and particularly Saturday was lower than the other days and weeks. Other
+than that trends are not very apparent.
 
 Make a single plot (connected scatter dots, geom\_line) with lines for
 each day (minute on x, activity count on the y), aesthetic mapping for
