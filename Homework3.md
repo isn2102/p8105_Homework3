@@ -179,9 +179,24 @@ From this summary it seems that in weeks 4 and 5 the activity on Sunday
 and particularly Saturday was lower than the other days and weeks. Other
 than that trends are not very apparent.
 
-Make a single plot (connected scatter dots, geom\_line) with lines for
-each day (minute on x, activity count on the y), aesthetic mapping for
-color for day of the week
+Create a plot showing activity over the course of the day, with each day
+of the week represented by a different color. For ease of viewing I have
+averaged the activity for each day of the week across the 5 weeks.
+
+``` r
+accel_df %>% 
+  #group_by(day, minute_activity) %>% 
+  #mutate(avg_activity_count = mean(activity_count)) %>% 
+  ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
+  geom_point(size = .1, alpha = .5) +
+  geom_line(size = .2)
+```
+
+<img src="Homework3_files/figure-gfm/unnamed-chunk-8-1.png" width="90%" />
+Based on this graph I can see that the first \~300 minutes of the day
+have much less activity. There are some spikes in activity around
+500-700 minutes and around 1300-1400 minutes. The spikes later in the
+day are particularly pronounced on Fridays.
 
 ## Problem 3
 

@@ -11,7 +11,7 @@ library(tidyverse)
 
 # Set how graphs are printed in knitted file
 knitr::opts_chunk$set(
-  fig.width = 8,
+  fig.width = 10,
   fig.asp = .6,
   out.width = "90%"
 )
@@ -36,7 +36,7 @@ Describe the data:
 ```{r}
 data("instacart")
 ```
-
+**comments**  
 The dataset instacart contains `r nrow(instacart)` observations and `r ncol(instacart)` columns. Observations are at the level of items in orders placed by users. The variables provide information about the users/orders and the items purchased. For example aisle contains values such as "fresh vegetables" and "eggs," product_name contains values such as "spring water" and "organic half and half" and days_since_prior_order is numeric. The total list of variables is: `r colnames(instacart)`. 
 
 Count aisles: 
@@ -45,6 +45,7 @@ instacart %>%
   count(aisle) %>% 
   arrange(desc(n))
 ```
+**comments**  
 There are 134 aisles, with most items ordered from the fresh fruits and fresh vegetables aisles. 
 
 Make a plot of aisles: 
@@ -60,7 +61,7 @@ instacart %>%
   geom_point() + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
-
+**comments**  
 Most of the aisles with order counts above 10,000 show between 10k - 20k orders. There are about 8 aisles with order counts between 20-40k, 3 aisles with order counts between 40-80k, and two aisles (fruit and vegetables) with order counts around 150k.
 
 Make a table of popular items:
@@ -74,6 +75,7 @@ instacart %>%
   arrange(aisle, rank) %>% 
   knitr::kable()
 ```
+**comments**  
 The most popular items in baking are brown sugar, baking soda, and cane sugar. The most popular items in dog food care are snack sticks, organix chicken recipe, and small dog biscuits. The most popular items in packaged fruits/veggies are baby spinach, raspberries, and blueberries. 
 
 Make a table for mean hour of product ordered on each day of the week:
@@ -87,6 +89,7 @@ instacart %>%
     values_from = mean_hour
   )
 ```
+**comments**  
 Overall coffee ice cream is ordered a little later in the day on weekdays (around 3pm), while pink lady apples are ordered a little earlier in the day (around noon). On weekends both products on average are ordered around 12pm. 
 
 ## Problem 2
@@ -103,6 +106,7 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
                                  "weekend", "weekday")))} %>% 
   mutate(minute_activity = rep((1:1440), times = 35))
 ```
+**comments**  
 The dataset accel_df contains `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. Variables are the week, the day, the specific minute of the day, the activity count in that minute, and whether it was a weekend or a weekday. 
 
 Create a table with daily activity counts summed across all minutes for the 5 weeks. 
@@ -119,21 +123,30 @@ accel_df %>%
     values_from = daily_activity) %>% 
   knitr::kable()
 ```
+**comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday and particularly Saturday was lower than the other days and weeks. Other than that trends are not very apparent. 
 
+Create a plot showing activity over the course of the day, with each day of the week represented by a different color. For ease of viewing I have averaged the activity for each day of the week across the 5 weeks. **NOT SURE IF I SHOULD DO THIS**
 ```{r, message = FALSE}
-
+accel_df %>% 
+  #group_by(day, minute_activity) %>% 
+  #mutate(avg_activity_count = mean(activity_count)) %>% 
+  ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
+  geom_point(size = .1, alpha = .5) +
+  geom_line(size = .2)
 ```
-
-
-Make a single plot (connected scatter dots, geom_line) with lines for each day (minute on x, activity count on the y), aesthetic mapping for color for day of the week 
+**GRAPH IS MESSY AND HARD TO READ**
+**comments**  
+Based on this graph I can see that the first ~300 minutes of the day have much less activity. There are some spikes in activity around 500-700 minutes and around 1300-1400 minutes. The spikes later in the day are particularly pronounced on Fridays.
 
 ## Problem 3
 
+```{r}
+
+```
+
+Notes: 
 use count for snowfall. 
-
 data manipulation (group a bunch, filter, then summarize) + plots. For each station (multiple lines), time course over the years for June and July in two panels
-
 use patchwork to merge plots. Don't use scatterplot, maybe use contour plot, bin plot, hex plot... 
-
 First filter, then show distribution (ridge, box, violin, etc...) for each year. 
