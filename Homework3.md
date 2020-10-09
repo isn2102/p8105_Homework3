@@ -11,6 +11,7 @@ Describe the data:
 data("instacart")
 ```
 
+**comments**  
 The dataset instacart contains 1384617 observations and 15 columns.
 Observations are at the level of items in orders placed by users. The
 variables provide information about the users/orders and the items
@@ -45,6 +46,7 @@ instacart %>%
     ## 10 bread                          23635
     ## # … with 124 more rows
 
+**comments**  
 There are 134 aisles, with most items ordered from the fresh fruits and
 fresh vegetables aisles.
 
@@ -64,7 +66,7 @@ instacart %>%
 ```
 
 <img src="Homework3_files/figure-gfm/unnamed-chunk-3-1.png" width="90%" />
-
+**comments**  
 Most of the aisles with order counts above 10,000 show between 10k - 20k
 orders. There are about 8 aisles with order counts between 20-40k, 3
 aisles with order counts between 40-80k, and two aisles (fruit and
@@ -95,6 +97,7 @@ instacart %>%
 | packaged vegetables fruits | Organic Raspberries                           | 5546 |    2 |
 | packaged vegetables fruits | Organic Blueberries                           | 4966 |    3 |
 
+**comments**  
 The most popular items in baking are brown sugar, baking soda, and cane
 sugar. The most popular items in dog food care are snack sticks, organix
 chicken recipe, and small dog biscuits. The most popular items in
@@ -122,6 +125,7 @@ instacart %>%
     ## 1 Coffee Ice Cream  13.8  14.3  15.4  15.3  15.2  12.3  13.8
     ## 2 Pink Lady Apples  13.4  11.4  11.7  14.2  11.6  12.8  11.9
 
+**comments**  
 Overall coffee ice cream is ordered a little later in the day on
 weekdays (around 3pm), while pink lady apples are ordered a little
 earlier in the day (around noon). On weekends both products on average
@@ -146,6 +150,7 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
   mutate(minute_activity = rep((1:1440), times = 35))
 ```
 
+**comments**  
 The dataset accel\_df contains 50400 observations and 6 variables.
 Variables are the week, the day, the specific minute of the day, the
 activity count in that minute, and whether it was a weekend or a
@@ -175,39 +180,79 @@ accel_df %>%
 |    4 | 154049.0 | 409450.00 |     1440 | 260617 | 340291.0 | 319568.0 |    434460 |
 |    5 | 620860.0 | 389080.00 |     1440 | 138421 | 549658.0 | 367824.0 |    445366 |
 
+**comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday
 and particularly Saturday was lower than the other days and weeks. Other
 than that trends are not very apparent.
 
 Create a plot showing activity over the course of the day, with each day
-of the week represented by a different color. For ease of viewing I have
-averaged the activity for each day of the week across the 5 weeks.
+of the week represented by a different color.
 
 ``` r
 accel_df %>% 
-  #group_by(day, minute_activity) %>% 
-  #mutate(avg_activity_count = mean(activity_count)) %>% 
   ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
   geom_point(size = .1, alpha = .5) +
-  geom_line(size = .2)
+  geom_line(size = .2) + 
+  geom_smooth(size = .2)
 ```
 
 <img src="Homework3_files/figure-gfm/unnamed-chunk-8-1.png" width="90%" />
+**comments**  
 Based on this graph I can see that the first \~300 minutes of the day
-have much less activity. There are some spikes in activity around
-500-700 minutes and around 1300-1400 minutes. The spikes later in the
-day are particularly pronounced on Fridays.
+have much less activity than the rest of the day. There are some spikes
+in activity around 500-700 minutes (especially for Sundayand) and around
+1300-1400 minutes. The spikes later in the day are particularly
+pronounced on Fridays.
 
 ## Problem 3
 
-use count for snowfall.
+Describe the dataset:
 
-data manipulation (group a bunch, filter, then summarize) + plots. For
-each station (multiple lines), time course over the years for June and
-July in two panels
+``` r
+data("ny_noaa")
+miss_prcp <-
+  ny_noaa %>% 
+  drop_na(prcp)
+miss_snow <-
+  ny_noaa %>% 
+  drop_na(snow)
+miss_snwd <-
+  ny_noaa %>% 
+  drop_na(snwd)
+miss_tmax <-
+  ny_noaa %>% 
+  drop_na(tmax)
+miss_tmin <-
+  ny_noaa %>% 
+  drop_na(tmin)
+```
 
-use patchwork to merge plots. Don’t use scatterplot, maybe use contour
-plot, bin plot, hex plot…
+The dataset ny\_noaa contains 2595176 observations and 7 variables.
+Variables include: id, date, prcp, snow, snwd, tmax, tmin. It includes
+data from 1981-01-01 to 2010-12-31. There are 145838 missing prcp
+values, 381221 missing snow values, 591786 missing snwd values, 1134358
+missing tmax values, and 1134420 missing tmin values.
 
-First filter, then show distribution (ridge, box, violin, etc…) for each
-year.
+The goal is to do some exploration of this dataset. To that end, write a
+short description of the dataset, noting the size and structure of the
+data, describing some key variables, and indicating the extent to which
+missing data is an issue. Then, do or answer the following (commenting
+on the results of each):
+
+Do some data cleaning. Create separate variables for year, month, and
+day. Ensure observations for temperature, precipitation, and snowfall
+are given in reasonable units. For snowfall, what are the most commonly
+observed values? Why? Make a two-panel plot showing the average max
+temperature in January and in July in each station across years. Is
+there any observable / interpretable structure? Any outliers? Make a
+two-panel plot showing (i) tmax vs tmin for the full dataset (note that
+a scatterplot may not be the best option); and (ii) make a plot showing
+the distribution of snowfall values greater than 0 and less than 100
+separately by year.
+
+Notes: use count for snowfall. data manipulation (group a bunch, filter,
+then summarize) + plots. For each station (multiple lines), time course
+over the years for June and July in two panels use patchwork to merge
+plots. Don’t use scatterplot, maybe use contour plot, bin plot, hex
+plot… First filter, then show distribution (ridge, box, violin, etc…)
+for each year.

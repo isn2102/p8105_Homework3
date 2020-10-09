@@ -126,27 +126,78 @@ accel_df %>%
 **comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday and particularly Saturday was lower than the other days and weeks. Other than that trends are not very apparent. 
 
-Create a plot showing activity over the course of the day, with each day of the week represented by a different color. For ease of viewing I have averaged the activity for each day of the week across the 5 weeks. **NOT SURE IF I SHOULD DO THIS**
+Create a plot showing activity over the course of the day, with each day of the week represented by a different color.  
 ```{r, message = FALSE}
 accel_df %>% 
-  #group_by(day, minute_activity) %>% 
-  #mutate(avg_activity_count = mean(activity_count)) %>% 
   ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
   geom_point(size = .1, alpha = .5) +
-  geom_line(size = .2)
+  geom_line(size = .2) + 
+  geom_smooth(size = .2)
 ```
-**GRAPH IS MESSY AND HARD TO READ**
+
 **comments**  
-Based on this graph I can see that the first ~300 minutes of the day have much less activity. There are some spikes in activity around 500-700 minutes and around 1300-1400 minutes. The spikes later in the day are particularly pronounced on Fridays.
+Based on this graph I can see that the first ~300 minutes of the day have much less activity than the rest of the day. There are some spikes in activity around 500-700 minutes (especially for Sundayand) and around 1300-1400 minutes. The spikes later in the day are particularly pronounced on Fridays.
 
 ## Problem 3
 
+Describe the dataset: 
+```{r}
+data("ny_noaa")
+miss_prcp <-
+  ny_noaa %>% 
+  drop_na(prcp)
+miss_snow <-
+  ny_noaa %>% 
+  drop_na(snow)
+miss_snwd <-
+  ny_noaa %>% 
+  drop_na(snwd)
+miss_tmax <-
+  ny_noaa %>% 
+  drop_na(tmax)
+miss_tmin <-
+  ny_noaa %>% 
+  drop_na(tmin)
+```
+The dataset ny_noaa contains `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. Variables include: `r colnames(ny_noaa)`. It includes data from `r min(pull(ny_noaa, date))` to `r max(pull(ny_noaa, date))`. There are `r nrow(ny_noaa) - nrow(miss_prcp)` missing prcp values, `r nrow(ny_noaa) - nrow(miss_snow)` missing snow values, `r nrow(ny_noaa) - nrow(miss_snwd)` missing snwd values, `r nrow(ny_noaa) - nrow(miss_tmax)` missing tmax values, and `r nrow(ny_noaa) - nrow(miss_tmin)` missing tmin values. Given this, it appears that about 5% of the data are missing for each variable. 
+
+Do some data cleaning: create separate variables for year/month/day, divide temperature, snowfall, and snow depth by 10 to result in cm, divide precipitation by 100 to result in cm. 
+```{r}
+tidy_ny_noaa <- 
+  ny_noaa %>% 
+  separate(date, c("Year", "Month", "Day"), convert = TRUE) %>% 
+  mutate(prcp = prcp/100) %>% 
+  mutate(snow = snow/10) %>% 
+  mutate(snwd = snwd/10) %>% 
+  mutate(tmax = as.numeric(tmax)/10) %>% 
+  mutate(tmin = as.numeric(tmin)/10) 
+
+tidy_ny_noaa %>% 
+  count(snow, sort = TRUE)
+```
+The most commonly observed values for snowfall are 0 and NA. This is likely because overall there were a lot of missing values, and because NY only gets snow a few weeks out of the year. 
+
+Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers? 
+```{r}
+tidy_ny_noaa %>% 
+  group_by(id, Year, Month) %>% 
+  filter(Month %in% c(1, 7)) %>% 
+  recode(Month)
+  summarize(
+    avg_max_temp = mean(tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Year, y = avg_max_temp, group = id)) +
+  geom_point(size = .1) +
+  geom_path(size = .1) +
+  #geom_smooth() +
+  facet_grid(. ~ Month) 
+  
+```
+
+
+Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+use patchwork to merge plots. Don't use scatterplot, maybe use contour plot, bin plot, hex plot... 
+First filter, then show distribution (ridge, box, violin, etc...) for each year. 
 ```{r}
 
 ```
 
-Notes: 
-use count for snowfall. 
-data manipulation (group a bunch, filter, then summarize) + plots. For each station (multiple lines), time course over the years for June and July in two panels
-use patchwork to merge plots. Don't use scatterplot, maybe use contour plot, bin plot, hex plot... 
-First filter, then show distribution (ridge, box, violin, etc...) for each year. 
