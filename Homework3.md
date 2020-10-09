@@ -193,10 +193,14 @@ accel_df %>%
   ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
   geom_point(size = .1, alpha = .5) +
   geom_line(size = .2) + 
-  geom_smooth(size = .2)
+  geom_smooth(size = .2) +
+  labs(title = "Activity over the course of the day", x = "Minute", y = "Activity Count") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust
+                                   = 1))
 ```
 
 <img src="Homework3_files/figure-gfm/unnamed-chunk-8-1.png" width="90%" />
+
 **comments**  
 Based on this graph I can see that the first \~300 minutes of the day
 have much less activity than the rest of the day. There are some spikes
@@ -231,28 +235,120 @@ The dataset ny\_noaa contains 2595176 observations and 7 variables.
 Variables include: id, date, prcp, snow, snwd, tmax, tmin. It includes
 data from 1981-01-01 to 2010-12-31. There are 145838 missing prcp
 values, 381221 missing snow values, 591786 missing snwd values, 1134358
-missing tmax values, and 1134420 missing tmin values.
+missing tmax values, and 1134420 missing tmin values. Given this, it
+appears that about 5% of the data are missing for each variable.
 
-The goal is to do some exploration of this dataset. To that end, write a
-short description of the dataset, noting the size and structure of the
-data, describing some key variables, and indicating the extent to which
-missing data is an issue. Then, do or answer the following (commenting
-on the results of each):
+Do some data cleaning: create separate variables for year/month/day,
+divide temperature, snowfall, and snow depth by 10 to result in cm,
+divide precipitation by 100 to result in cm.
 
-Do some data cleaning. Create separate variables for year, month, and
-day. Ensure observations for temperature, precipitation, and snowfall
-are given in reasonable units. For snowfall, what are the most commonly
-observed values? Why? Make a two-panel plot showing the average max
-temperature in January and in July in each station across years. Is
-there any observable / interpretable structure? Any outliers? Make a
-two-panel plot showing (i) tmax vs tmin for the full dataset (note that
-a scatterplot may not be the best option); and (ii) make a plot showing
-the distribution of snowfall values greater than 0 and less than 100
-separately by year.
+``` r
+tidy_ny_noaa <- 
+  ny_noaa %>% 
+  separate(date, c("Year", "Month", "Day"), convert = TRUE) %>% 
+  mutate(prcp = prcp/100) %>% 
+  mutate(snow = snow/10) %>% 
+  mutate(snwd = snwd/10) %>% 
+  mutate(tmax = as.numeric(tmax)/10) %>% 
+  mutate(tmin = as.numeric(tmin)/10) 
 
-Notes: use count for snowfall. data manipulation (group a bunch, filter,
-then summarize) + plots. For each station (multiple lines), time course
-over the years for June and July in two panels use patchwork to merge
-plots. Don’t use scatterplot, maybe use contour plot, bin plot, hex
-plot… First filter, then show distribution (ridge, box, violin, etc…)
-for each year.
+month_df <-
+  tibble(
+    Month = 1:12, 
+    month_name = month.name
+  )
+
+tidy_ny_noaa <- left_join(tidy_ny_noaa, month_df, by = "Month")
+
+tidy_ny_noaa %>% 
+  count(snow, sort = TRUE)
+```
+
+    ## # A tibble: 282 x 2
+    ##     snow       n
+    ##    <dbl>   <int>
+    ##  1   0   2008508
+    ##  2  NA    381221
+    ##  3   2.5   31022
+    ##  4   1.3   23095
+    ##  5   5.1   18274
+    ##  6   7.6   10173
+    ##  7   0.8    9962
+    ##  8   0.5    9748
+    ##  9   3.8    9197
+    ## 10   0.3    8790
+    ## # … with 272 more rows
+
+The most commonly observed values for snowfall are 0 and NA. This is
+likely because overall there were a lot of missing values, and because
+NY only gets snow a few weeks out of the year.
+
+Make a two-panel plot showing the average max temperature in January and
+in July in each station across years. **Not working to recode the month
+names**
+
+``` r
+tidy_ny_noaa %>% 
+  group_by(id, Year, month_name) %>% 
+  filter(month_name %in% c("January", "July")) %>% 
+  summarize(
+    avg_max_temp = mean(tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = Year, y = avg_max_temp, group = id)) +
+  geom_point(size = .1) +
+  geom_path(size = .1) +
+  facet_grid(. ~ month_name) +
+  labs(title = "Mean average temperature for January and July
+       by station and year", x = "year", y = "average
+       maximum temperature (C)") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust
+                                   = 1))
+```
+
+    ## `summarise()` regrouping output by 'id', 'Year' (override with `.groups` argument)
+
+    ## Warning: Removed 5970 rows containing missing values (geom_point).
+
+    ## Warning: Removed 5931 row(s) containing missing values (geom_path).
+
+<img src="Homework3_files/figure-gfm/unnamed-chunk-11-1.png" width="90%" />
+Most of the stations are overlapping in their max temperatures,
+generally spanning from about -12 degrees C to 10 degrees C in January
+and from 20 degrees C to 32 degrees C in July. There are a few outliers
+at particular stations. The temperature does not appear to be trending
+in any particular direction overall across the years in July, and seems
+to be trending slightly higher over the years in January. However some
+years are clearly colder or warmer than others at all stations.
+
+Make a two-panel plot showing (i) tmax vs tmin and (ii) distribution of
+snowfall by year.
+
+``` r
+tmintmax_df <- 
+  tidy_ny_noaa %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  #geom_bin2d() +
+  geom_density_2d(size = .1) + 
+  geom_point(alpha = .1) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package")
+
+snowfall_df <-
+  tidy_ny_noaa %>% 
+  filter(snow < 100) %>% 
+  filter(snow > 0) %>% 
+  group_by(Year) %>% 
+  mutate(Year = as.factor(Year)) %>% 
+  ggplot(aes(y = snow, x = Year)) + 
+  geom_violin(aes(fill = Year), alpha = .4) + 
+  labs(
+    title = "Distribution of snowfall by year", 
+    x = "year", 
+    y = "Snowfall") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust
+                                   = 1))
+  
+(tmintmax_df / snowfall_df)
+```
