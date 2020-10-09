@@ -9,6 +9,7 @@ output: github_document
 library(p8105.datasets)
 library(tidyverse)
 library(patchwork)
+library(hexbin)
 
 # Set how graphs are printed in knitted file
 knitr::opts_chunk$set(
@@ -33,14 +34,14 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ## Problem 1 
 
-Describe the data: 
+**Describe the data:**   
 ```{r}
 data("instacart")
 ```
 **comments**  
 The dataset instacart contains `r nrow(instacart)` observations and `r ncol(instacart)` columns. Observations are at the level of items in orders placed by users. The variables provide information about the users/orders and the items purchased. For example aisle contains values such as "fresh vegetables" and "eggs," product_name contains values such as "spring water" and "organic half and half" and days_since_prior_order is numeric. The total list of variables is: `r colnames(instacart)`. 
 
-Count aisles: 
+**Count aisles:**  
 ```{r}
 instacart %>% 
   count(aisle) %>% 
@@ -49,7 +50,7 @@ instacart %>%
 **comments**  
 There are 134 aisles, with most items ordered from the fresh fruits and fresh vegetables aisles. 
 
-Make a plot of aisles: 
+**Make a plot of aisles:**  
 ```{r}
 instacart %>% 
   count(aisle) %>% 
@@ -62,10 +63,12 @@ instacart %>%
   geom_point() + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
+
 **comments**  
 Most of the aisles with order counts above 10,000 show between 10k - 20k orders. There are about 8 aisles with order counts between 20-40k, 3 aisles with order counts between 40-80k, and two aisles (fruit and vegetables) with order counts around 150k.
 
-Make a table of popular items:
+
+**Make a table of popular items:**  
 ```{r}
 instacart %>% 
   filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
@@ -79,7 +82,7 @@ instacart %>%
 **comments**  
 The most popular items in baking are brown sugar, baking soda, and cane sugar. The most popular items in dog food care are snack sticks, organix chicken recipe, and small dog biscuits. The most popular items in packaged fruits/veggies are baby spinach, raspberries, and blueberries. 
 
-Make a table for mean hour of product ordered on each day of the week:
+**Make a table for mean hour of product ordered on each day of the week:**  
 ```{r}
 instacart %>% 
   filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
@@ -95,7 +98,7 @@ Overall coffee ice cream is ordered a little later in the day on weekdays (aroun
 
 ## Problem 2
 
-Load data and tidy by cleaning variable names and pivoting to longer with one variable for the minute of activity in the day and one variable for the activity count in that minute. Add a weekend and weekday variable and change minute of activity to numeric. 
+**A** Load data and tidy by cleaning variable names and pivoting to longer with one variable for the minute of activity in the day and one variable for the activity count in that minute. Add a weekend and weekday variable and change minute of activity to numeric. 
 ```{r, message = FALSE}
 accel_df <- read_csv("./data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
@@ -110,7 +113,7 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
 **comments**  
 The dataset accel_df contains `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. Variables are the week, the day, the specific minute of the day, the activity count in that minute, and whether it was a weekend or a weekday. 
 
-Create a table with daily activity counts summed across all minutes for the 5 weeks. 
+**B** Create a table with daily activity counts summed across all minutes for the 5 weeks. 
 **FACTOR RELVEL NOT WORKING**
 ```{r, message = FALSE}
 accel_df %>% 
@@ -127,7 +130,7 @@ accel_df %>%
 **comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday and particularly Saturday was lower than the other days and weeks. Other than that trends are not very apparent. 
 
-Create a plot showing activity over the course of the day, with each day of the week represented by a different color.  
+**C** Create a plot showing activity over the course of the day, with each day of the week represented by a different color.  
 ```{r, message = FALSE}
 accel_df %>% 
   ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
@@ -144,7 +147,7 @@ Based on this graph I can see that the first ~300 minutes of the day have much l
 
 ## Problem 3
 
-Describe the dataset: 
+**A** Describe the dataset: 
 ```{r}
 data("ny_noaa")
 miss_prcp <-
@@ -163,9 +166,11 @@ miss_tmin <-
   ny_noaa %>% 
   drop_na(tmin)
 ```
+
+**comments**  
 The dataset ny_noaa contains `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. Variables include: `r colnames(ny_noaa)`. It includes data from `r min(pull(ny_noaa, date))` to `r max(pull(ny_noaa, date))`. There are `r nrow(ny_noaa) - nrow(miss_prcp)` missing prcp values, `r nrow(ny_noaa) - nrow(miss_snow)` missing snow values, `r nrow(ny_noaa) - nrow(miss_snwd)` missing snwd values, `r nrow(ny_noaa) - nrow(miss_tmax)` missing tmax values, and `r nrow(ny_noaa) - nrow(miss_tmin)` missing tmin values. Given this, it appears that about 5% of the data are missing for each variable. 
 
-Do some data cleaning: create separate variables for year/month/day, divide temperature, snowfall, and snow depth by 10 to result in cm, divide precipitation by 100 to result in cm. 
+**B** Do some data cleaning: create separate variables for year/month/day, divide temperature, snowfall, and snow depth by 10 to result in cm, divide precipitation by 100 to result in cm. 
 ```{r}
 tidy_ny_noaa <- 
   ny_noaa %>% 
@@ -187,10 +192,11 @@ tidy_ny_noaa <- left_join(tidy_ny_noaa, month_df, by = "Month")
 tidy_ny_noaa %>% 
   count(snow, sort = TRUE)
 ```
+
+**comments**  
 The most commonly observed values for snowfall are 0 and NA. This is likely because overall there were a lot of missing values, and because NY only gets snow a few weeks out of the year. 
 
-Make a two-panel plot showing the average max temperature in January and in July in each station across years. 
-**Not working to recode the month names**  
+**C** Make a two-panel plot showing the average max temperature in January and in July in each station across years. 
 ```{r}
 tidy_ny_noaa %>% 
   group_by(id, Year, month_name) %>% 
@@ -201,27 +207,31 @@ tidy_ny_noaa %>%
   geom_point(size = .1) +
   geom_path(size = .1) +
   facet_grid(. ~ month_name) +
-  labs(title = "Mean average temperature for January and July
-       by station and year", x = "year", y = "average
-       maximum temperature (C)") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust
-                                   = 1))
+  labs(
+       title = "Mean average temperature for January and July by station over time", 
+       x = "Year", 
+       y = "Average maximum temperature (C)") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 ```
+
+**comments**  
 Most of the stations are overlapping in their max temperatures, generally spanning from about -12 degrees C to 10 degrees C in January and from 20 degrees C to 32 degrees C in July. There are a few outliers at particular stations. The temperature does not appear to be trending in any particular direction overall across the years in July, and seems to be trending slightly higher over the years in January. However some years are clearly colder or warmer than others at all stations.  
 
-Make a two-panel plot showing (i) tmax vs tmin and (ii)  distribution of snowfall by year.
-```{r, eval = FALSE}
+**D** Make a two-panel plot showing (i) tmax vs tmin and (ii)  distribution of snowfall by year.
+```{r}
 tmintmax_df <- 
   tidy_ny_noaa %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
-  #geom_bin2d() +
-  geom_density_2d(size = .1) + 
-  geom_point(alpha = .1) + 
+  stat_bin_hex(colour = "white", na.rm = TRUE) +
+  scale_fill_gradientn(colours = c("blue","green"), 
+                       name = "Frequency", 
+                       na.value = NA) +
   labs(
-    title = "Temperature plot",
+    title = "Max and Min Temperature",
     x = "Minimum daily temperature (C)",
     y = "Maxiumum daily temperature (C)",
-    caption = "Data from the rnoaa package")
+    caption = "Data from the rnoaa package") + 
+  theme(legend.direction = "vertical")
 
 snowfall_df <-
   tidy_ny_noaa %>% 
@@ -234,10 +244,12 @@ snowfall_df <-
   labs(
     title = "Distribution of snowfall by year", 
     x = "year", 
-    y = "Snowfall") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust
-                                   = 1))
+    y = "Snowfall", 
+    caption = "Data from the rnoaa package") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   
-(tmintmax_df / snowfall_df)
+(tmintmax_df + snowfall_df)
 ```
 
+**comments**  
+Min and max temperature appear to be positively correlated. I used the hexbin package to more clearly display density - the highest density is in the area of min temperature 0-30 degrees C and max temperature 0-30 degrees C. The daily snowfall appears to be most frequently between zero and five cm, with some outliers that are larger each year. The trends across years seem stable. 
