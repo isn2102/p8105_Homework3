@@ -4,6 +4,7 @@ author: "Isabel Nelson"
 date: "10/6/2020"
 output: github_document
 ---
+NOTE - NEED TO INCREASE GLOBAL FONT SIZE FOR ALL GRAPHS, MAYBE INCREASE OVERALL SIZE OF GRAPHS?
 
 ```{r setup, include=FALSE}
 library(p8105.datasets)
