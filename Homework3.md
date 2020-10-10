@@ -135,7 +135,7 @@ are ordered around 12pm.
 
 ## Problem 2
 
-**A** Load data and tidy by cleaning variable names and pivoting to
+**A.** Load data and tidy by cleaning variable names and pivoting to
 longer with one variable for the minute of activity in the day and one
 variable for the activity count in that minute. Add a weekend and
 weekday variable and change minute of activity to numeric.
@@ -147,9 +147,12 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
     activity_1:activity_1440,
     names_to = "minute_activity", 
     values_to = "activity_count") %>% 
-    {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
+  {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
                                  "weekend", "weekday")))} %>% 
-  mutate(minute_activity = rep((1:1440), times = 35))
+  mutate(
+    minute_activity = rep((1:1440), times = 35), 
+    day = as.factor(day), 
+    day = forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))
 ```
 
 **comments**  
@@ -158,36 +161,34 @@ Variables are the week, the day, the specific minute of the day, the
 activity count in that minute, and whether it was a weekend or a
 weekday.
 
-**B** Create a table with daily activity counts summed across all
-minutes for the 5 weeks. **FACTOR RELVEL NOT WORKING**
+**B.** Create a table with daily activity counts summed across all
+minutes for the 5 weeks.
 
 ``` r
 accel_df %>% 
   group_by(week, day) %>% 
   summarize(
     daily_activity = sum(activity_count)) %>% 
-  mutate(day = as.factor(day)) %>% 
-  mutate(day = (forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))) %>% 
   pivot_wider(
     names_from = day, 
     values_from = daily_activity) %>% 
   knitr::kable()
 ```
 
-| week |   Friday |    Monday | Saturday | Sunday | Thursday |  Tuesday | Wednesday |
-| ---: | -------: | --------: | -------: | -----: | -------: | -------: | --------: |
-|    1 | 480542.6 |  78828.07 |   376254 | 631105 | 355923.6 | 307094.2 |    340115 |
-|    2 | 568839.0 | 295431.00 |   607175 | 422018 | 474048.0 | 423245.0 |    440962 |
-|    3 | 467420.0 | 685910.00 |   382928 | 467052 | 371230.0 | 381507.0 |    468869 |
-|    4 | 154049.0 | 409450.00 |     1440 | 260617 | 340291.0 | 319568.0 |    434460 |
-|    5 | 620860.0 | 389080.00 |     1440 | 138421 | 549658.0 | 367824.0 |    445366 |
+| week |    Monday |  Tuesday | Wednesday | Thursday |   Friday | Saturday | Sunday |
+| ---: | --------: | -------: | --------: | -------: | -------: | -------: | -----: |
+|    1 |  78828.07 | 307094.2 |    340115 | 355923.6 | 480542.6 |   376254 | 631105 |
+|    2 | 295431.00 | 423245.0 |    440962 | 474048.0 | 568839.0 |   607175 | 422018 |
+|    3 | 685910.00 | 381507.0 |    468869 | 371230.0 | 467420.0 |   382928 | 467052 |
+|    4 | 409450.00 | 319568.0 |    434460 | 340291.0 | 154049.0 |     1440 | 260617 |
+|    5 | 389080.00 | 367824.0 |    445366 | 549658.0 | 620860.0 |     1440 | 138421 |
 
 **comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday
 and particularly Saturday was lower than the other days and weeks. Other
 than that trends are not very apparent.
 
-**C** Create a plot showing activity over the course of the day, with
+**C.** Create a plot showing activity over the course of the day, with
 each day of the week represented by a different color.
 
 ``` r
@@ -212,7 +213,7 @@ pronounced on Fridays.
 
 ## Problem 3
 
-**A** Describe the dataset:
+**A.** Describe the dataset:
 
 ``` r
 data("ny_noaa")
@@ -241,7 +242,7 @@ values, 381221 missing snow values, 591786 missing snwd values, 1134358
 missing tmax values, and 1134420 missing tmin values. Given this, it
 appears that about 5% of the data are missing for each variable.
 
-**B** Do some data cleaning: create separate variables for
+**B.** Do some data cleaning: create separate variables for
 year/month/day, divide temperature, snowfall, and snow depth by 10 to
 result in cm, divide precipitation by 100 to result in cm.
 
@@ -249,11 +250,11 @@ result in cm, divide precipitation by 100 to result in cm.
 tidy_ny_noaa <- 
   ny_noaa %>% 
   separate(date, c("Year", "Month", "Day"), convert = TRUE) %>% 
-  mutate(prcp = prcp/100) %>% 
-  mutate(snow = snow/10) %>% 
-  mutate(snwd = snwd/10) %>% 
-  mutate(tmax = as.numeric(tmax)/10) %>% 
-  mutate(tmin = as.numeric(tmin)/10) 
+  mutate(prcp = prcp/100,
+         snow = snow/10,
+         snwd = snwd/10,
+         tmax = as.numeric(tmax)/10,
+         tmin = as.numeric(tmin)/10)  
 
 month_df <-
   tibble(
@@ -287,7 +288,7 @@ The most commonly observed values for snowfall are 0 and NA. This is
 likely because overall there were a lot of missing values, and because
 NY only gets snow a few weeks out of the year.
 
-**C** Make a two-panel plot showing the average max temperature in
+**C.** Make a two-panel plot showing the average max temperature in
 January and in July in each station across years.
 
 ``` r
@@ -324,7 +325,7 @@ in any particular direction overall across the years in July, and seems
 to be trending slightly higher over the years in January. However some
 years are clearly colder or warmer than others at all stations.
 
-**D** Make a two-panel plot showing (i) tmax vs tmin and (ii)
+**D.** Make a two-panel plot showing (i) tmax vs tmin and (ii)
 distribution of snowfall by year.
 
 ``` r

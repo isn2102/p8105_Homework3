@@ -4,7 +4,6 @@ author: "Isabel Nelson"
 date: "10/6/2020"
 output: github_document
 ---
-NOTE - NEED TO INCREASE GLOBAL FONT SIZE FOR ALL GRAPHS, MAYBE INCREASE OVERALL SIZE OF GRAPHS?
 
 ```{r setup, include=FALSE}
 library(p8105.datasets)
@@ -20,7 +19,8 @@ knitr::opts_chunk$set(
 )
 
 #Set global theme for plots
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
+theme_set(theme_minimal(base_size = 18) + theme(
+  legend.position = "bottom"))
 
 #Set options for all plots
 options(
@@ -99,7 +99,7 @@ Overall coffee ice cream is ordered a little later in the day on weekdays (aroun
 
 ## Problem 2
 
-**A** Load data and tidy by cleaning variable names and pivoting to longer with one variable for the minute of activity in the day and one variable for the activity count in that minute. Add a weekend and weekday variable and change minute of activity to numeric. 
+**A.** Load data and tidy by cleaning variable names and pivoting to longer with one variable for the minute of activity in the day and one variable for the activity count in that minute. Add a weekend and weekday variable and change minute of activity to numeric. 
 ```{r, message = FALSE}
 accel_df <- read_csv("./data/accel_data.csv") %>% 
   janitor::clean_names() %>% 
@@ -107,22 +107,23 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
     activity_1:activity_1440,
     names_to = "minute_activity", 
     values_to = "activity_count") %>% 
-    {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
+  {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
                                  "weekend", "weekday")))} %>% 
-  mutate(minute_activity = rep((1:1440), times = 35))
+  mutate(
+    minute_activity = rep((1:1440), times = 35), 
+    day = as.factor(day), 
+    day = forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))
+
 ```
 **comments**  
 The dataset accel_df contains `r nrow(accel_df)` observations and `r ncol(accel_df)` variables. Variables are the week, the day, the specific minute of the day, the activity count in that minute, and whether it was a weekend or a weekday. 
 
-**B** Create a table with daily activity counts summed across all minutes for the 5 weeks. 
-**FACTOR RELVEL NOT WORKING**
+**B.** Create a table with daily activity counts summed across all minutes for the 5 weeks. 
 ```{r, message = FALSE}
 accel_df %>% 
   group_by(week, day) %>% 
   summarize(
     daily_activity = sum(activity_count)) %>% 
-  mutate(day = as.factor(day)) %>% 
-  mutate(day = (forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))) %>% 
   pivot_wider(
     names_from = day, 
     values_from = daily_activity) %>% 
@@ -131,7 +132,7 @@ accel_df %>%
 **comments**  
 From this summary it seems that in weeks 4 and 5 the activity on Sunday and particularly Saturday was lower than the other days and weeks. Other than that trends are not very apparent. 
 
-**C** Create a plot showing activity over the course of the day, with each day of the week represented by a different color.  
+**C.** Create a plot showing activity over the course of the day, with each day of the week represented by a different color.  
 ```{r, message = FALSE}
 accel_df %>% 
   ggplot(aes(x = minute_activity, y = activity_count, color = day)) + 
@@ -148,7 +149,7 @@ Based on this graph I can see that the first ~300 minutes of the day have much l
 
 ## Problem 3
 
-**A** Describe the dataset: 
+**A.** Describe the dataset: 
 ```{r}
 data("ny_noaa")
 miss_prcp <-
@@ -171,16 +172,16 @@ miss_tmin <-
 **comments**  
 The dataset ny_noaa contains `r nrow(ny_noaa)` observations and `r ncol(ny_noaa)` variables. Variables include: `r colnames(ny_noaa)`. It includes data from `r min(pull(ny_noaa, date))` to `r max(pull(ny_noaa, date))`. There are `r nrow(ny_noaa) - nrow(miss_prcp)` missing prcp values, `r nrow(ny_noaa) - nrow(miss_snow)` missing snow values, `r nrow(ny_noaa) - nrow(miss_snwd)` missing snwd values, `r nrow(ny_noaa) - nrow(miss_tmax)` missing tmax values, and `r nrow(ny_noaa) - nrow(miss_tmin)` missing tmin values. Given this, it appears that about 5% of the data are missing for each variable. 
 
-**B** Do some data cleaning: create separate variables for year/month/day, divide temperature, snowfall, and snow depth by 10 to result in cm, divide precipitation by 100 to result in cm. 
+**B.** Do some data cleaning: create separate variables for year/month/day, divide temperature, snowfall, and snow depth by 10 to result in cm, divide precipitation by 100 to result in cm. 
 ```{r}
 tidy_ny_noaa <- 
   ny_noaa %>% 
   separate(date, c("Year", "Month", "Day"), convert = TRUE) %>% 
-  mutate(prcp = prcp/100) %>% 
-  mutate(snow = snow/10) %>% 
-  mutate(snwd = snwd/10) %>% 
-  mutate(tmax = as.numeric(tmax)/10) %>% 
-  mutate(tmin = as.numeric(tmin)/10) 
+  mutate(prcp = prcp/100,
+         snow = snow/10,
+         snwd = snwd/10,
+         tmax = as.numeric(tmax)/10,
+         tmin = as.numeric(tmin)/10)  
 
 month_df <-
   tibble(
@@ -197,7 +198,7 @@ tidy_ny_noaa %>%
 **comments**  
 The most commonly observed values for snowfall are 0 and NA. This is likely because overall there were a lot of missing values, and because NY only gets snow a few weeks out of the year. 
 
-**C** Make a two-panel plot showing the average max temperature in January and in July in each station across years. 
+**C.** Make a two-panel plot showing the average max temperature in January and in July in each station across years. 
 ```{r}
 tidy_ny_noaa %>% 
   group_by(id, Year, month_name) %>% 
@@ -218,7 +219,7 @@ tidy_ny_noaa %>%
 **comments**  
 Most of the stations are overlapping in their max temperatures, generally spanning from about -12 degrees C to 10 degrees C in January and from 20 degrees C to 32 degrees C in July. There are a few outliers at particular stations. The temperature does not appear to be trending in any particular direction overall across the years in July, and seems to be trending slightly higher over the years in January. However some years are clearly colder or warmer than others at all stations.  
 
-**D** Make a two-panel plot showing (i) tmax vs tmin and (ii)  distribution of snowfall by year.
+**D.** Make a two-panel plot showing (i) tmax vs tmin and (ii)  distribution of snowfall by year.
 ```{r}
 tmintmax_df <- 
   tidy_ny_noaa %>% 
