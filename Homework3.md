@@ -145,12 +145,12 @@ accel_df <- read_csv("./data/accel_data.csv") %>%
   janitor::clean_names() %>% 
   pivot_longer(
     activity_1:activity_1440,
-    names_to = "minute_activity", 
+    names_to = "minute_activity",
+    names_prefix = "activity_", 
     values_to = "activity_count") %>% 
-  {mutate(., weekend = (ifelse(pull(., day_id) %in% c("3", "4"), 
-                                 "weekend", "weekday")))} %>% 
   mutate(
-    minute_activity = rep((1:1440), times = 35), 
+    weekend = ifelse(day_id %in% c("3", "4"), "weekend", "weekday"),
+    minute_activity = as.numeric(minute_activity), 
     day = as.factor(day), 
     day = forcats::fct_relevel(day, c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")))
 ```
@@ -207,7 +207,7 @@ accel_df %>%
 **comments**  
 Based on this graph I can see that the first \~300 minutes of the day
 have much less activity than the rest of the day. There are some spikes
-in activity around 500-700 minutes (especially for Sundayand) and around
+in activity around 500-700 minutes (especially for Sunday) and around
 1300-1400 minutes. The spikes later in the day are particularly
 pronounced on Fridays.
 
@@ -345,8 +345,9 @@ tmintmax_df <-
 
 snowfall_df <-
   tidy_ny_noaa %>% 
-  filter(snow < 100) %>% 
-  filter(snow > 0) %>% 
+  filter(
+    snow < 100,  
+    snow > 0) %>% 
   group_by(Year) %>% 
   mutate(Year = as.factor(Year)) %>% 
   ggplot(aes(y = snow, x = Year)) + 
